@@ -37,6 +37,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+import dev.benchristians.nfctest.models.DataTransferModel;
 
 import java.io.IOException;
 
@@ -153,15 +154,13 @@ public class MainActivity extends Activity {
     };
 
     private void promptForContent(final NdefMessage msg) {
-        NdefRecord[] payloads = msg.getRecords();
-        final byte[] name = payloads[0].getPayload();
-        final byte[] imageId = payloads[1].getPayload();
+        final DataTransferModel model = DataTransferModel.createFromMessage(msg);
 
-        new AlertDialog.Builder(this).setTitle("Replace current content?")
+        new AlertDialog.Builder(this).setTitle(model.getUsername() + " wants to join your game! Allow?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        String body = new String(name) + " is trying to connect with image: " + new String(imageId);
+                        String body = model.getUsername() + " is trying to connect with image: " + model.getImageId();
                         setNoteBody(body);
                     }
                 })
@@ -180,14 +179,9 @@ public class MainActivity extends Activity {
     }
 
     private NdefMessage getNoteAsNdef() {
-        byte[] textBytes = mNote.getText().toString().getBytes();
-        NdefRecord username = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
-                new byte[] {}, textBytes);
-        NdefRecord imageId = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
-                new byte[] {}, "123".getBytes());
-        return new NdefMessage(new NdefRecord[] {
-                username, imageId
-        });
+        String enteredUsername = mNote.getText().toString();
+        DataTransferModel model = new DataTransferModel(enteredUsername, 123, 1312312313);
+        return model.getAsPayload();
     }
 
     NdefMessage[] getNdefMessages(Intent intent) {
