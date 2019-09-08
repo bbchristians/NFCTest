@@ -2,7 +2,6 @@ package dev.benchristians.nfctest.models
 
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
-import java.nio.ByteBuffer
 
 class DataTransferModel constructor(
     val username: String,

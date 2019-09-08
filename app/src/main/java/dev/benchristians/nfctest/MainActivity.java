@@ -43,7 +43,6 @@ import java.io.IOException;
 
 public class MainActivity extends Activity {
     private static final String TAG = "Main";
-    private boolean mResumed = false;
     private boolean mWriteMode = false;
     NfcAdapter mNfcAdapter;
     EditText mNote;
@@ -56,19 +55,19 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        this.mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        setContentView(R.layout.activity_main);
-        findViewById(R.id.write_tag).setOnClickListener(mTagWriter);
-        mNote = ((EditText) findViewById(R.id.username));
-        mNote.addTextChangedListener(mTextWatcher);
+        this.setContentView(R.layout.activity_main);
+        this.findViewById(R.id.write_tag).setOnClickListener(mTagWriter);
+        this.mNote = findViewById(R.id.username);
+        this.mNote.addTextChangedListener(mTextWatcher);
 
         // Handle all of our received NFC intents in this activity.
-        mNfcPendingIntent = PendingIntent.getActivity(this, 0,
+        this.mNfcPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
         // Intent filters for reading a note from a tag or exchanging over p2p.
-        IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        final IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
         try {
             ndefDetected.addDataType("text/plain");
         } catch (MalformedMimeTypeException e) { }
@@ -82,7 +81,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mResumed = true;
         // Sticky notes received from Android
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
             NdefMessage[] messages = getNdefMessages(getIntent());
@@ -91,13 +89,6 @@ public class MainActivity extends Activity {
             setIntent(new Intent()); // Consume this intent.
         }
         enableNdefExchangeMode();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mResumed = false;
-        mNfcAdapter.disableForegroundNdefPush(this);
     }
 
     @Override
@@ -118,20 +109,14 @@ public class MainActivity extends Activity {
     private TextWatcher mTextWatcher = new TextWatcher() {
 
         @Override
-        public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-
-        }
+        public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) { }
 
         @Override
-        public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
-
-        }
+        public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) { }
 
         @Override
         public void afterTextChanged(Editable arg0) {
-            if (mResumed) {
-                mNfcAdapter.enableForegroundNdefPush(MainActivity.this, getNoteAsNdef());
-            }
+                mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
         }
     };
 
@@ -215,12 +200,11 @@ public class MainActivity extends Activity {
     }
 
     private void enableNdefExchangeMode() {
-        mNfcAdapter.enableForegroundNdefPush(MainActivity.this, getNoteAsNdef());
+        mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
         mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mNdefExchangeFilters, null);
     }
 
     private void disableNdefExchangeMode() {
-        mNfcAdapter.disableForegroundNdefPush(this);
         mNfcAdapter.disableForegroundDispatch(this);
     }
 
