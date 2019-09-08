@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         findViewById(R.id.write_tag).setOnClickListener(mTagWriter);
-        mNote = ((EditText) findViewById(R.id.note));
+        mNote = ((EditText) findViewById(R.id.username));
         mNote.addTextChangedListener(mTextWatcher);
 
         // Handle all of our received NFC intents in this activity.
