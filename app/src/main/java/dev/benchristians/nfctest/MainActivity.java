@@ -1,9 +1,7 @@
 package dev.benchristians.nfctest;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
@@ -18,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import dev.benchristians.nfctest.models.DataTransferModel;
+import dev.benchristians.nfctest.util.AlertUtil;
 import dev.benchristians.nfctest.util.TagUtil;
 
 
@@ -38,7 +37,16 @@ public class MainActivity extends Activity {
         this.mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         this.setContentView(R.layout.activity_main);
-        this.findViewById(R.id.write_tag).setOnClickListener(mTagWriter);
+        this.findViewById(R.id.write_tag).setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                // Write to a tag for as long as the dialog is shown.
+                disableNdefExchangeMode();
+                enableTagWriteMode();
+
+                AlertUtil.showTouchButtsDialog(MainActivity.this);
+            }
+        });
         this.mNote = findViewById(R.id.username);
 
         // Handle all of our received NFC intents in this activity.
@@ -75,7 +83,7 @@ public class MainActivity extends Activity {
         // NDEF exchange mode
         if (!mWriteMode && NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
             NdefMessage[] msgs = getNdefMessages(intent);
-            promptForContent(msgs[0]);
+            AlertUtil.showJoinRequestDialog(this, msgs[0]);
         }
 
         // Tag writing mode
@@ -85,44 +93,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private View.OnClickListener mTagWriter = new View.OnClickListener() {
-        @Override
-        public void onClick(View arg0) {
-            // Write to a tag for as long as the dialog is shown.
-            disableNdefExchangeMode();
-            enableTagWriteMode();
-
-            new AlertDialog.Builder(MainActivity.this).setTitle("Touch butts with your friend!")
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            disableTagWriteMode();
-                            enableNdefExchangeMode();
-                        }
-                    }).create().show();
-        }
-    };
-
-    private void promptForContent(final NdefMessage msg) {
-        final DataTransferModel model = DataTransferModel.createFromMessage(msg);
-
-        new AlertDialog.Builder(this).setTitle(model.getUsername() + " wants to join your game! Allow?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        String body = model.getUsername() + " is trying to connect with image: " + model.getImageId();
-                        setNoteBody(body);
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface arg0, int arg1) {
-
-                    }
-                }).show();
-    }
-
-    private void setNoteBody(String body) {
+    public void setNoteBody(String body) {
         Editable text = mNote.getText();
         text.clear();
         text.append(body);
@@ -164,7 +135,7 @@ public class MainActivity extends Activity {
         return msgs;
     }
 
-    private void enableNdefExchangeMode() {
+    public void enableNdefExchangeMode() {
         mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
         mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mNdefExchangeFilters, null);
     }
@@ -173,7 +144,7 @@ public class MainActivity extends Activity {
         mNfcAdapter.disableForegroundDispatch(this);
     }
 
-    private void enableTagWriteMode() {
+    public void enableTagWriteMode() {
         mWriteMode = true;
         mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
         IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
@@ -183,7 +154,7 @@ public class MainActivity extends Activity {
         mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mWriteTagFilters, null);
     }
 
-    private void disableTagWriteMode() {
+    public void disableTagWriteMode() {
         mWriteMode = false;
         mNfcAdapter.disableForegroundDispatch(this);
     }
