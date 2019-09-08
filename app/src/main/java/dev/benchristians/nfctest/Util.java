@@ -10,8 +10,9 @@ public class Util {
 
     public static long getChildbirthTime() {
         Random random = new java.util.Random();
-        long eventTime = System.currentTimeMillis() + random.nextInt(30000) + 15000;
-        new Timer().schedule(new TimedEvent(), eventTime);
+        long delay = System.currentTimeMillis() + random.nextInt(30000) + 15000;
+        long eventTime = delay;
+        new Timer().schedule(new TimedEvent(), delay);
         return eventTime;
     }
 
