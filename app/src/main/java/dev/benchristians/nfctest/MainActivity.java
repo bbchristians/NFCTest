@@ -180,7 +180,7 @@ public class MainActivity extends Activity {
 
     private NdefMessage getNoteAsNdef() {
         String enteredUsername = mNote.getText().toString();
-        DataTransferModel model = new DataTransferModel(enteredUsername, 123, 1312312313);
+        DataTransferModel model = new DataTransferModel(enteredUsername, 123, Util.getChildbirthTime() );
         return model.getAsPayload();
     }
 
