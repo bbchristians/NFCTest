@@ -41,7 +41,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 public class MainActivity extends Activity {
-    private static final String TAG = "stickynotes";
+    private static final String TAG = "Main";
     private boolean mResumed = false;
     private boolean mWriteMode = false;
     NfcAdapter mNfcAdapter;
@@ -153,11 +153,15 @@ public class MainActivity extends Activity {
     };
 
     private void promptForContent(final NdefMessage msg) {
+        NdefRecord[] payloads = msg.getRecords();
+        final byte[] name = payloads[0].getPayload();
+        final byte[] imageId = payloads[1].getPayload();
+
         new AlertDialog.Builder(this).setTitle("Replace current content?")
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface arg0, int arg1) {
-                        String body = new String(msg.getRecords()[0].getPayload());
+                        String body = new String(name) + " is trying to connect with image: " + new String(imageId);
                         setNoteBody(body);
                     }
                 })
@@ -177,10 +181,12 @@ public class MainActivity extends Activity {
 
     private NdefMessage getNoteAsNdef() {
         byte[] textBytes = mNote.getText().toString().getBytes();
-        NdefRecord textRecord = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
+        NdefRecord username = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
                 new byte[] {}, textBytes);
+        NdefRecord imageId = new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain".getBytes(),
+                new byte[] {}, "123".getBytes());
         return new NdefMessage(new NdefRecord[] {
-                textRecord
+                username, imageId
         });
     }
 
