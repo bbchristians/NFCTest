@@ -13,11 +13,9 @@ class AlertUtil {
         fun showJoinRequestDialog(ctx: MainActivity, msg: NdefMessage) {
             val model = DataTransferModel.createFromMessage(msg)
             AlertDialog.Builder(ctx).setTitle(model.username + " wants to join your game! Allow?")
-                .setPositiveButton("Yes") { _, _ ->
-                    val body = model.username + " is trying to connect with image: " + model.imageId
-                    ctx.setNoteBody(body)
-                }
-                .setNegativeButton("No") { _, _ -> }.show()
+                .setPositiveButton("Yes") { _, _ -> ctx.handleIncomingTransfer(model) }
+                .setNegativeButton("No") { _, _ -> }
+                .show()
         }
 
         @JvmStatic

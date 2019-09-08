@@ -3,7 +3,7 @@ package dev.benchristians.nfctest.models
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 
-class DataTransferModel constructor(
+class DataTransferModel(
     val username: String,
     val imageId: Int,
     val childTime: Long

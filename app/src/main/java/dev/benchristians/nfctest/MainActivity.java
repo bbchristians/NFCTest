@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import dev.benchristians.nfctest.models.DataTransferModel;
 import dev.benchristians.nfctest.util.AlertUtil;
+import dev.benchristians.nfctest.util.ChildBirthUtil;
 import dev.benchristians.nfctest.util.TagUtil;
 
 
@@ -101,7 +102,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void setNoteBody(String body) {
+    public void handleIncomingTransfer(DataTransferModel model) {
+        ChildBirthUtil.startChildBirthTimer(this, model);
+        this.setNoteBody(model.getUsername() + " connected");
+    }
+
+    private void setNoteBody(String body) {
         Editable text = mNote.getText();
         text.clear();
         text.append(body);
@@ -110,7 +116,7 @@ public class MainActivity extends Activity {
     private NdefMessage getNoteAsNdef() {
         String enteredUsername = mNote.getText().toString();
         Integer imageId = (Integer) mImage.getTag();
-        DataTransferModel model = new DataTransferModel(enteredUsername, imageId, Util.getChildbirthTime() );
+        DataTransferModel model = new DataTransferModel(enteredUsername, imageId, Util.getChildbirthTime());
         return model.getAsPayload();
     }
 
