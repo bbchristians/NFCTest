@@ -15,6 +15,7 @@ import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import dev.benchristians.nfctest.models.DataTransferModel;
 import dev.benchristians.nfctest.util.AlertUtil;
 import dev.benchristians.nfctest.util.TagUtil;
@@ -25,6 +26,7 @@ public class MainActivity extends Activity {
     private boolean mWriteMode = false;
     NfcAdapter mNfcAdapter;
     EditText mNote;
+    ImageView mImage;
 
     PendingIntent mNfcPendingIntent;
     IntentFilter[] mWriteTagFilters;
@@ -44,10 +46,16 @@ public class MainActivity extends Activity {
                 disableNdefExchangeMode();
                 enableTagWriteMode();
 
+                mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
+
                 AlertUtil.showTouchButtsDialog(MainActivity.this);
             }
         });
         this.mNote = findViewById(R.id.username);
+        this.mImage = findViewById(R.id.my_pet);
+
+        this.mImage.setImageResource(R.drawable.bat);
+        this.mImage.setTag(R.drawable.bat);
 
         // Handle all of our received NFC intents in this activity.
         this.mNfcPendingIntent = PendingIntent.getActivity(this, 0,
@@ -101,7 +109,8 @@ public class MainActivity extends Activity {
 
     private NdefMessage getNoteAsNdef() {
         String enteredUsername = mNote.getText().toString();
-        DataTransferModel model = new DataTransferModel(enteredUsername, 123, Util.getChildbirthTime() );
+        Integer imageId = (Integer) mImage.getTag();
+        DataTransferModel model = new DataTransferModel(enteredUsername, imageId, Util.getChildbirthTime() );
         return model.getAsPayload();
     }
 
@@ -146,7 +155,6 @@ public class MainActivity extends Activity {
 
     public void enableTagWriteMode() {
         mWriteMode = true;
-        mNfcAdapter.setNdefPushMessage(getNoteAsNdef(), MainActivity.this);
         IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         mWriteTagFilters = new IntentFilter[] {
                 tagDetected
